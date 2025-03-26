@@ -7,24 +7,29 @@ use Ratchet\ConnectionInterface;
 use Ratchet\Server\IoServer;
 use Ratchet\Http\HttpServer;
 use Ratchet\WebSocket\WsServer;
+use React\EventLoop\Loop; // Use React\EventLoop\Loop instead of Factory
+use React\EventLoop\LoopInterface;
 
 class CatMouse implements MessageComponentInterface {
     protected $clients;
     protected $distance;
     protected $catSteps;
     protected $mouseSteps;
+    protected $loop; // Add loop property
 
-    public function __construct() {
+    public function __construct(LoopInterface $loop) { // Add loop parameter
         $this->clients = new \SplObjectStorage;
-        $this->distance = rand(2, 10); // Initial random distance
+        $this->distance = rand(2, 10);
         $this->catSteps = 0;
         $this->mouseSteps = 0;
+        $this->loop = $loop; // Initialize loop
     }
 
     public function onOpen(ConnectionInterface $conn) {
         $this->clients->attach($conn);
         echo "New connection! ({$conn->resourceId})\n";
         $this->sendGameState($conn);
+        $this->startGameLoop(); // Start the game loop
     }
 
     public function onMessage(ConnectionInterface $from, $msg) {
@@ -47,23 +52,46 @@ class CatMouse implements MessageComponentInterface {
             'catSteps' => $this->catSteps,
             'mouseSteps' => $this->mouseSteps,
         ]));
-        $this->runGame();
     }
 
-    private function runGame() {
-        if ($this->distance <= 0) {
-            $this->broadcast("Cat caught the mouse!");
-            $this->resetGame();
-        } elseif ($this->distance >= 20) {
-            $this->broadcast("Mouse escaped!");
-            $this->resetGame();
-        } else {
-            $this->catMove();
-            $this->mouseMove();
-            $this->broadcastGameState();
-            usleep(500000); // Wait for 0.5 seconds before next move.
-            $this->runGame();
+    public function startGameLoop() {
+        echo 'cat mouse here ';
+        $gameOver = false;
+        while($gameOver == false){
+            echo "Game loop running at: " . date('H:i:s') . "\n"; // Add this line
+            sleep(1);
+            if ($this->distance <= 0) {
+                $this->broadcast("Cat caught the mouse!");
+                $this->resetGame();
+                $gameOver = true;
+            } elseif ($this->distance >= 20) {
+                $this->broadcast("Mouse escaped!");
+                $this->resetGame();
+                $gameOver = true;
+            } else {
+                $this->catMove();
+                $this->mouseMove();
+                $this->broadcastGameState();
+                echo "Cat steps: " . $this->catSteps . "\n";
+                echo "Mouse steps: " . $this->mouseSteps . "\n";
+                echo "Distance: " . $this->distance . "\n";
+            }
+
         }
+//        $this->loop->addPeriodicTimer(3, function () { // Run every 3 seconds
+//            echo "Game loop running at: " . date('H:i:s') . "\n"; // Add this line
+//            if ($this->distance <= 0) {
+//                $this->broadcast("Cat caught the mouse!");
+//                $this->resetGame();
+//            } elseif ($this->distance >= 20) {
+//                $this->broadcast("Mouse escaped!");
+//                $this->resetGame();
+//            } else {
+//                $this->catMove();
+//                $this->mouseMove();
+//                $this->broadcastGameState();
+//            }
+//        });
     }
 
     private function catMove() {
@@ -82,11 +110,7 @@ class CatMouse implements MessageComponentInterface {
 
     private function broadcastGameState() {
         foreach ($this->clients as $client) {
-            $client->send(json_encode([
-                'distance' => $this->distance,
-                'catSteps' => $this->catSteps,
-                'mouseSteps' => $this->mouseSteps,
-            ]));
+            $this->sendGameState($client);
         }
     }
 
@@ -104,14 +128,18 @@ class CatMouse implements MessageComponentInterface {
     }
 }
 
+$loop = Loop::get(); // Use Loop::get() instead of Factory::create()
 $server = IoServer::factory(
     new HttpServer(
         new WsServer(
-            new CatMouse()
+            new CatMouse($loop)
         )
     ),
-    8080
+    8080,
+    '0.0.0.0',
+    $loop
 );
 
 $server->run();
+
 ?>

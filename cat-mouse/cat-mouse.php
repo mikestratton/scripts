@@ -1,9 +1,16 @@
+<?php
+
+require_once 'cat-mouse-server.php';
+
+?>
 <!DOCTYPE html>
+
 <html>
 <head>
   <title>Cat and Mouse Chase</title>
 </head>
 <body>
+<h1><?php var_dump($this->distance); ?></h1>
 <div id="game">
   <p>Distance: <span id="distance"></span></p>
   <p>Cat Steps: <span id="catSteps"></span></p>
