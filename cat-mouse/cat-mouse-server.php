@@ -11,11 +11,11 @@ use React\EventLoop\Loop; // Use React\EventLoop\Loop instead of Factory
 use React\EventLoop\LoopInterface;
 
 class CatMouse implements MessageComponentInterface {
-    protected $clients;
-    protected $distance;
-    protected $catSteps;
-    protected $mouseSteps;
-    protected $loop; // Add loop property
+    protected SplObjectStorage $clients;
+    protected int $distance;
+    protected int $catSteps;
+    protected int $mouseSteps;
+    protected LoopInterface $loop; // Add loop property
 
     public function __construct(LoopInterface $loop) { // Add loop parameter
         $this->clients = new \SplObjectStorage;
@@ -59,7 +59,7 @@ class CatMouse implements MessageComponentInterface {
         $gameOver = false;
         while($gameOver == false){
             echo "Game loop running at: " . date('H:i:s') . "\n"; // Add this line
-            sleep(1);
+            usleep(500000);
             if ($this->distance <= 0) {
                 $this->broadcast("Cat caught the mouse!");
                 $this->resetGame();
