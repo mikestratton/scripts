@@ -22,7 +22,7 @@ class CatMouse implements MessageComponentInterface
     public function __construct(React\EventLoop\LoopInterface $loop)
     { // Add loop parameter
         $this->clients = new \SplObjectStorage;
-        $this->distance = rand(2, 10);
+        $this->distance = rand(5, 15);
         $this->catSteps = 0;
         $this->mouseSteps = 0;
         $this->loop = $loop; // Initialize loop

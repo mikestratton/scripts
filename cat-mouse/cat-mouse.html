@@ -8,9 +8,13 @@
   <p>Distance: <span id="distance"></span></p>
   <p>Cat Steps: <span id="catSteps"></span></p>
   <p>Mouse Steps: <span id="mouseSteps"></span></p>
+
+  <p style="display:none" id="mouseStatus"><img src="img/mouse.jpg" alt="mouse"></p>
+  <p style="display:none" id="catStatus"><img src="img/cat.webp" alt="cat"></p>
+
+
   <div id="messages"></div>
 </div>
-
 <script>
   const conn = new WebSocket('ws://localhost:8080');
   const distanceDisplay = document.getElementById('distance');
@@ -31,6 +35,8 @@
       const newMessage = document.createElement('p');
       newMessage.textContent = data.message;
       messages.appendChild(newMessage);
+
+
     }
     console.log(data);
   };
@@ -43,6 +49,20 @@
     distanceDisplay.textContent = data.distance;
     catStepsDisplay.textContent = data.catSteps;
     mouseStepsDisplay.textContent = data.mouseSteps;
+    winner(data);
+  }
+
+  function winner(data){
+    if(data.distance <= 0){
+      console.log('cat won');
+      const cat = document.getElementById("catStatus");
+      cat.style.display = "block";
+    }
+    if(data.distance >= 20){
+      console.log('mouse won');
+      const mouse = document.getElementById("mouseStatus");
+      mouse.style.display = "block";
+    }
   }
 </script>
 </body>
