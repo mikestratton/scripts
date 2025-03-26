@@ -18,6 +18,8 @@
   const mouseStepsDisplay = document.getElementById('mouseSteps');
   const messages = document.getElementById('messages');
 
+  let receivedData = []; // Array to store received data
+
   conn.onopen = function(e) {
     console.log("Connection established!");
   };
@@ -25,7 +27,7 @@
   conn.onmessage = function(e) {
     const data = JSON.parse(e.data);
     if (data.distance !== undefined) {
-      updateDisplay(data); // Call updateDisplay function
+      receivedData.push(data); // Store data in the array
     }
     if (data.message !== undefined) {
       const newMessage = document.createElement('p');
@@ -35,11 +37,32 @@
     console.log(data);
   };
 
+  // Function to process the received data with a delay
+  function processData() {
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index < receivedData.length) {
+        updateDisplay(receivedData[index]);
+        index++;
+      } else {
+        clearInterval(interval); // Stop the interval when all data is processed
+      }
+    }, 500); // 500 milliseconds (0.5 seconds)
+  }
+
   function updateDisplay(data) {
     distanceDisplay.textContent = data.distance;
     catStepsDisplay.textContent = data.catSteps;
     mouseStepsDisplay.textContent = data.mouseSteps;
   }
+
+  conn.onclose = function(e) {
+    processData();
+  }
+
+  // If you want to process the data after a delay, instead of on close, use this.
+  // setTimeout(processData, 3000);
+
 </script>
 </body>
 </html>

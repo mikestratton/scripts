@@ -52,14 +52,15 @@ class CatMouse implements MessageComponentInterface {
             'catSteps' => $this->catSteps,
             'mouseSteps' => $this->mouseSteps,
         ]));
+//        usleep(250000);
     }
 
     public function startGameLoop() {
         echo 'cat mouse here ';
         $gameOver = false;
         while($gameOver == false){
-            echo "Game loop running at: " . date('H:i:s') . "\n"; // Add this line
-            usleep(500000);
+            echo "Game loop running at: " . date('H:i:s') . "\n";
+//            usleep(500000); // 0.5 second delay
             if ($this->distance <= 0) {
                 $this->broadcast("Cat caught the mouse!");
                 $this->resetGame();
@@ -71,38 +72,24 @@ class CatMouse implements MessageComponentInterface {
             } else {
                 $this->catMove();
                 $this->mouseMove();
-                $this->broadcastGameState();
+                $this->broadcastGameState(); // Sends data to the browser
+
                 echo "Cat steps: " . $this->catSteps . "\n";
                 echo "Mouse steps: " . $this->mouseSteps . "\n";
                 echo "Distance: " . $this->distance . "\n";
             }
-
         }
-//        $this->loop->addPeriodicTimer(3, function () { // Run every 3 seconds
-//            echo "Game loop running at: " . date('H:i:s') . "\n"; // Add this line
-//            if ($this->distance <= 0) {
-//                $this->broadcast("Cat caught the mouse!");
-//                $this->resetGame();
-//            } elseif ($this->distance >= 20) {
-//                $this->broadcast("Mouse escaped!");
-//                $this->resetGame();
-//            } else {
-//                $this->catMove();
-//                $this->mouseMove();
-//                $this->broadcastGameState();
-//            }
-//        });
     }
 
     private function catMove() {
-        $steps = rand(1, 3);
+        $steps = rand(0, 5);
         $this->distance -= $steps;
         $this->catSteps += $steps;
         $this->broadcast("Cat moved $steps steps.");
     }
 
     private function mouseMove() {
-        $steps = rand(1, 3);
+        $steps = rand(0, 5);
         $this->distance += $steps;
         $this->mouseSteps += $steps;
         $this->broadcast("Mouse moved $steps steps.");
@@ -111,6 +98,7 @@ class CatMouse implements MessageComponentInterface {
     private function broadcastGameState() {
         foreach ($this->clients as $client) {
             $this->sendGameState($client);
+//            usleep(500000);
         }
     }
 
