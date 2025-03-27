@@ -204,4 +204,4 @@ $ioServer = new IoServer($httpServer, new React\Socket\SocketServer('0.0.0.0:808
 echo "WebSocket server running on ws://0.0.0.0:8080\n";
 
 $loop->run(); // Start the event loop
-$server->run();
+//$server->run();
